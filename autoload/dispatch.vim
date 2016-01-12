@@ -5,7 +5,7 @@ if exists('g:autoloaded_dispatch')
 endif
 
 let g:autoloaded_dispatch = 1
-
+let g:dispatch_debug = 0
 " Utility {{{1
 
 function! dispatch#uniq(list) abort
@@ -135,7 +135,7 @@ function! dispatch#vim_executable() abort
 endfunction
 
 function! dispatch#callback(request) abort
-  if !empty(v:servername) && has_key(s:request(a:request), 'id')
+  if !has("nvim") && !empty(v:servername) && has_key(s:request(a:request), 'id')
     return dispatch#shellescape(dispatch#vim_executable()) .
           \ ' --servername ' . dispatch#shellescape(v:servername) .
           \ ' --remote-expr "' . 'DispatchComplete(' . s:request(a:request).id . ')' . '"'
@@ -215,8 +215,11 @@ function! s:dispatch(request) abort
       redraw
       let a:request.handler = handler
       let pid = dispatch#pid(a:request)
-      echo ':!'.a:request.expanded .
+
+      if g:dispatch_debug
+        echo ':!'.a:request.expanded .
             \ ' ('.handler.'/'.(!empty(pid) ? pid : '?').')'
+      endif
       return 1
     endif
   endfor
@@ -792,7 +795,9 @@ function! dispatch#complete(file) abort
     else
       let label = 'Complete:'
     endif
-    echo label request.command
+    if g:dispatch_debug
+      echo label request.command
+    endif
     if !request.background
       call s:cgetfile(request, 0, -status)
       redraw

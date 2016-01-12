@@ -46,7 +46,7 @@ function! dispatch#tmux#make(request) abort
   elseif has('gui_running') || empty($TMUX) || (!empty(''.session) && session !=# system('tmux display-message -p "#S"')[0:-2])
     let cmd = 'new-window -n '.title
   else
-    let cmd = 'split-window -l 10 -d'
+    let cmd = 'split-window -l 1 -d'
   endif
 
   let cmd .= ' ' . dispatch#shellescape('-P', '-t', session.':', 'exec ' . script)
