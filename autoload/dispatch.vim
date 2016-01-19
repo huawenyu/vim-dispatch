@@ -858,11 +858,11 @@ function! s:open_quickfix(request, copen) abort
   execute 'botright' (a:copen ? 'copen' : 'cwindow')
 
   "echom "wilson: was_qf=" . was_qf . " buftype=" . &buftype . " copen=" a:copen
-  " wilson: was_qf=1 buftype=quickfix copen= 0
-  wincmd p
   "if &buftype ==# 'quickfix' && !was_qf && a:copen != 1
-  "  wincmd p
-  "endif
+  if &buftype ==# 'quickfix'
+    wincmd J
+    wincmd p
+  endif
 
   for winnr in range(1, winnr('$'))
     if getwinvar(winnr, '&buftype') ==# 'quickfix'
