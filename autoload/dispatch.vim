@@ -799,7 +799,9 @@ function! dispatch#complete(file) abort
       echo label request.command
     endif
     if !request.background
+      call genutils#MarkActiveWindow()
       call s:cgetfile(request, 0, -status)
+      call genutils#RestoreActiveWindow()
       redraw
     endif
   endif
@@ -817,7 +819,9 @@ function! dispatch#copen(bang) abort
   if !dispatch#completed(request) && filereadable(request.file . '.complete')
     let request.completed = 1
   endif
+  call genutils#MarkActiveWindow()
   call s:cgetfile(request, a:bang, 1)
+  call genutils#RestoreActiveWindow()
 endfunction
 
 function! s:cgetfile(request, all, copen) abort
@@ -856,22 +860,22 @@ endfunction
 
 function! s:open_quickfix(request, copen) abort
   let winnr = genutils#GetQuickfixWinnr()
-
   if winnr == 0
-    let was_qf = &buftype ==# 'quickfix'
-    "execute 'botright' (a:copen ? 'copen' : 'cwindow')
     botright copen
 
     Decho "Dispatch complete and open_quickfix was_qf=".was_qf." buftype=".&buftype." copen=".a:copen
     "if &buftype ==# 'quickfix' && !was_qf && a:copen != 1
+  endif
+
+  let winnr = genutils#GetQuickfixWinnr()
+  if winnr > 0
+    " force quickfix at full bottom
+    call genutils#MoveCursorToWindow(winnr)
     if &buftype ==# 'quickfix'
       wincmd J
       wincmd p
     endif
-  endif
 
-  let winnr = genutils#GetQuickfixWinnr()
-  if getwinvar(winnr, '&buftype') ==# 'quickfix'
     call setwinvar(winnr, 'quickfix_title', ':' . a:request.expanded)
     let bufnr = winbufnr(winnr)
     call setbufvar(bufnr, '&efm', a:request.format)
