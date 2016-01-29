@@ -840,6 +840,7 @@ function! s:cgetfile(request, all, copen) abort
     let &l:makeprg = request.command
     silent doautocmd QuickFixCmdPre cgetfile
     execute 'noautocmd cgetfile' fnameescape(request.file)
+    Decho "Dispatch cgetfile " . fnameescape(request.file)
     silent doautocmd QuickFixCmdPost cgetfile
   catch '^E40:'
     return v:exception
@@ -854,30 +855,34 @@ function! s:cgetfile(request, all, copen) abort
 endfunction
 
 function! s:open_quickfix(request, copen) abort
-  let was_qf = &buftype ==# 'quickfix'
-  execute 'botright' (a:copen ? 'copen' : 'cwindow')
+  let winnr = genutils#GetQuickfixWinnr()
 
-  Decho "Dispatch complete and s:open_quickfix was_qf=" . was_qf . " buftype=" . &buftype . " copen=" a:copen
-  "if &buftype ==# 'quickfix' && !was_qf && a:copen != 1
-  if &buftype ==# 'quickfix'
-    wincmd J
-    wincmd p
+  if winnr == 0
+    let was_qf = &buftype ==# 'quickfix'
+    "execute 'botright' (a:copen ? 'copen' : 'cwindow')
+    botright copen
+
+    Decho "Dispatch complete and open_quickfix was_qf=".was_qf." buftype=".&buftype." copen=".a:copen
+    "if &buftype ==# 'quickfix' && !was_qf && a:copen != 1
+    if &buftype ==# 'quickfix'
+      wincmd J
+      wincmd p
+    endif
   endif
 
-  for winnr in range(1, winnr('$'))
-    if getwinvar(winnr, '&buftype') ==# 'quickfix'
-      call setwinvar(winnr, 'quickfix_title', ':' . a:request.expanded)
-      let bufnr = winbufnr(winnr)
-      call setbufvar(bufnr, '&efm', a:request.format)
-      call setbufvar(bufnr, 'dispatch', escape(a:request.expanded, '%#'))
-      if has_key(a:request, 'program')
-        call setbufvar(bufnr, '&makeprg', a:request.program)
-      endif
-      if has_key(a:request, 'compiler')
-        call setbufvar(bufnr, 'current_compiler', a:request.compiler)
-      endif
+  let winnr = genutils#GetQuickfixWinnr()
+  if getwinvar(winnr, '&buftype') ==# 'quickfix'
+    call setwinvar(winnr, 'quickfix_title', ':' . a:request.expanded)
+    let bufnr = winbufnr(winnr)
+    call setbufvar(bufnr, '&efm', a:request.format)
+    call setbufvar(bufnr, 'dispatch', escape(a:request.expanded, '%#'))
+    if has_key(a:request, 'program')
+      call setbufvar(bufnr, '&makeprg', a:request.program)
     endif
-  endfor
+    if has_key(a:request, 'compiler')
+      call setbufvar(bufnr, 'current_compiler', a:request.compiler)
+    endif
+  endif
 endfunction
 
 " }}}1
