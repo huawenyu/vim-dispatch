@@ -863,7 +863,7 @@ function! s:open_quickfix(request, copen) abort
   if winnr == 0
     botright copen
 
-    Decho "Dispatch complete and open_quickfix was_qf=".was_qf." buftype=".&buftype." copen=".a:copen
+    Decho "Dispatch complete and open_quickfix buftype=".&buftype." copen=".a:copen
     "if &buftype ==# 'quickfix' && !was_qf && a:copen != 1
   endif
 
