@@ -865,17 +865,17 @@ function! s:open_quickfix(request, copen) abort
 
     Decho "Dispatch complete and open_quickfix buftype=".&buftype." copen=".a:copen
     "if &buftype ==# 'quickfix' && !was_qf && a:copen != 1
-  endif
 
-  let winnr = genutils#GetQuickfixWinnr()
-  if winnr > 0
     " force quickfix at full bottom
     call genutils#MoveCursorToWindow(winnr)
     if &buftype ==# 'quickfix'
       wincmd J
       wincmd p
     endif
+  endif
 
+  let winnr = genutils#GetQuickfixWinnr()
+  if winnr > 0
     call setwinvar(winnr, 'quickfix_title', ':' . a:request.expanded)
     let bufnr = winbufnr(winnr)
     call setbufvar(bufnr, '&efm', a:request.format)
